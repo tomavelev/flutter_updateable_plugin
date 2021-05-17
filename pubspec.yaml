@@ -1,0 +1,21 @@
+name: updatable
+description: A Flutter Plugin to make an App Update-able
+version: 0.0.1
+author: tomavelev@programtom.com
+homepage:
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  url_launcher: any
+  connectivity_plus: any
+  http: any
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
