@@ -115,13 +115,17 @@ class UpdatableState extends State<Updatable> {
 
   void doLoad() {
     var uri = Uri.parse(widget.updateHost);
+    int appCurrentVersion = widget.appCurrentVersion;
+    String channel = widget.channel;
+    String appPlatform = widget.appPlatform;
+    String appGuid = widget.appGuid;
     http
         .post(uri,
             body: jsonEncode({
-              "APP_VERSION": widget.appCurrentVersion,
-              "APP_CHANNEL": widget.channel,
-              "APP_GUID": widget.appGuid,
-              "PLATFORM": widget.appPlatform,
+              "APP_VERSION": appCurrentVersion,
+              "APP_CHANNEL": channel,
+              "APP_GUID": appGuid,
+              "PLATFORM": appPlatform,
             }))
         .catchError((resp) {
       setState(() {
@@ -266,7 +270,8 @@ class BuildState extends State<BuildList> {
     http
         .post(uri,
             body:
-                jsonEncode({"APP_VERSION": widget.updatable.appCurrentVersion, "APP_CHANNEL": widget.updatable.channel, "APP_GUID": widget.updatable.appGuid, "PLATFORM": widget.updatable..appPlatform, "lang": Trans.of(context).locale.languageCode}))
+                jsonEncode({"APP_VERSION": widget.updatable.appCurrentVersion, "APP_CHANNEL": widget.updatable.channel,
+                  "APP_GUID": widget.updatable.appGuid, "PLATFORM": widget.updatable.appPlatform, "lang": Trans.of(context).locale.languageCode}))
         .catchError((resp) {
       setState(() {
         _isLoading = false;
