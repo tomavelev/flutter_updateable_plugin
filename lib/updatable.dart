@@ -1,6 +1,7 @@
 library updatable;
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -9,12 +10,18 @@ import 'package:flutter/widgets.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'Trans.dart';
-import 'constants.dart';
 
 class Updatable extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
+  final int appCurrentVersion;
+  final String channel;
+  final String appGuid;
+  final String appPlatform;
+  final String buildsList;
+  final String updateHost;
+  final List<String>? processToStart;
 
-  const Updatable({Key? key, required this.child}) : super(key: key);
+  Updatable({Key? key, this.child, required this.appCurrentVersion, required this.updateHost, required this.channel, required this.appPlatform, required this.buildsList, this.processToStart, required this.appGuid}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -26,8 +33,9 @@ class UpdatableState extends State<Updatable> {
   var isCurrentVersion = true;
   var loading = false;
   var shouldForceTheUpgrade = false;
-  String? versionURL = "";
   int latestVersion = -1;
+
+  String? versionURL;
 
   @override
   void initState() {
@@ -37,7 +45,7 @@ class UpdatableState extends State<Updatable> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Column( crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         loading ? Text(Trans.of(context).checkingForNewVersion) : Container(),
         isCurrentVersion
@@ -46,12 +54,11 @@ class UpdatableState extends State<Updatable> {
                 onPressed: () {
                   viewNewVersion();
                 },
-                child: Center(
-                    child: Text(
-                  "${Trans.of(context).newVersionIsAvailable} ($APP_VERSION => $latestVersion)",
+                child: Text(
+                  "${Trans.of(context).newVersionIsAvailable} (${widget.appCurrentVersion} => $latestVersion)",
                   style: TextStyle(fontSize: 40),
                   textAlign: TextAlign.center,
-                )),
+                ),
               ),
         Expanded(
           child: !isCurrentVersion && shouldForceTheUpgrade
@@ -67,7 +74,9 @@ class UpdatableState extends State<Updatable> {
                         Trans.of(context).updateNow,
                       )))
                 ]))
-              : widget.child,
+              : widget.processToStart != null && widget.processToStart!.length > 0
+                  ? startApp()
+                  : showChild(context),
         )
       ],
     );
@@ -99,23 +108,20 @@ class UpdatableState extends State<Updatable> {
   Future<void> viewNewVersion() async {
     Navigator.of(context).push(new MaterialPageRoute<Null>(
         builder: (BuildContext context) {
-          return BuildList(
-            shouldForceTheUpgrade: shouldForceTheUpgrade,
-            appPackage: versionURL!,
-          );
+          return BuildList(shouldForceTheUpgrade: shouldForceTheUpgrade, updatable: this.widget, updateUrl: versionURL!);
         },
         fullscreenDialog: true));
   }
 
   void doLoad() {
-    var uri = Uri.parse(UPDATE_HOST);
+    var uri = Uri.parse(widget.updateHost);
     http
         .post(uri,
             body: jsonEncode({
-              "APP_VERSION": APP_VERSION,
-              "APP_CHANNEL": APP_CHANNEL,
-              "APP_GUID": APP_GUID,
-              "PLATFORM": APP_PLATFORM,
+              "APP_VERSION": widget.appCurrentVersion,
+              "APP_CHANNEL": widget.channel,
+              "APP_GUID": widget.appGuid,
+              "PLATFORM": widget.appPlatform,
             }))
         .catchError((resp) {
       setState(() {
@@ -139,19 +145,52 @@ class UpdatableState extends State<Updatable> {
         if (result != null && result['appPackage'] != null) {
           versionURL = result['appPackage'];
           latestVersion = result['latestVersion'];
-          isCurrentVersion = latestVersion <= APP_VERSION;
+          isCurrentVersion = latestVersion <= widget.appCurrentVersion;
           shouldForceTheUpgrade = result['shouldForceTheUpgrade'];
         }
       });
     });
   }
+
+  Widget showChild(BuildContext context) {
+    return widget.child != null ? widget.child! : Container();
+  }
+
+  Widget startApp() {
+    return TextButton(
+      child: Text("Start"),
+      onPressed: start,
+    );
+  }
+
+  void start() {
+    if (widget.processToStart != null && widget.processToStart!.length > 0) {
+      String process = widget.processToStart![0];
+      var args = <String>[];
+      for (int i = 1; i < widget.processToStart!.length; i++) {
+        args.add(widget.processToStart![i]);
+      }
+      Process.start(
+        process,
+        args,
+        runInShell: true,
+        mode: ProcessStartMode.detached, //all the magic is here
+      ).then((value) {
+        exit(0);
+      });
+    } else {
+      SnackBar snackBar = SnackBar(content: Text("Not enough parameters for App Start"));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
 }
 
 class BuildList extends StatefulWidget {
   final bool shouldForceTheUpgrade;
-  final String appPackage;
+  final Updatable updatable;
+  final String updateUrl;
 
-  const BuildList({Key? key, required this.shouldForceTheUpgrade, required this.appPackage}) : super(key: key);
+  const BuildList({Key? key, required this.shouldForceTheUpgrade, required this.updatable, required this.updateUrl}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -223,16 +262,11 @@ class BuildState extends State<BuildList> {
       _isLoading = true;
     });
 
-    var uri = Uri.parse(BUILDS_LIST);
+    var uri = Uri.parse(widget.updatable.buildsList);
     http
         .post(uri,
-            body: jsonEncode({
-              "APP_VERSION": APP_VERSION,
-              "APP_CHANNEL": APP_CHANNEL,
-              "APP_GUID": APP_GUID,
-              "PLATFORM": APP_PLATFORM,
-              "lang": Trans.of(context).locale.languageCode
-            }))
+            body:
+                jsonEncode({"APP_VERSION": widget.updatable.appCurrentVersion, "APP_CHANNEL": widget.updatable.channel, "APP_GUID": widget.updatable.appGuid, "PLATFORM": widget.updatable..appPlatform, "lang": Trans.of(context).locale.languageCode}))
         .catchError((resp) {
       setState(() {
         _isLoading = false;
@@ -293,7 +327,7 @@ class BuildState extends State<BuildList> {
               )),
               ElevatedButton(
                 onPressed: () {
-                  launch1(widget.appPackage, context);
+                  launch1(widget.updateUrl, context);
                 },
                 child: Text(Trans.of(context).downloadUpdate),
               )
