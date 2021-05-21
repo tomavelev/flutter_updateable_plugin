@@ -11,7 +11,8 @@ What a new App that wants to use it require is - adding the dependency:
 
 
  updatable:
-     path: https://github.com/tomavelev/flutter_updateable_plugin
+ 
+     url: https://github.com/tomavelev/flutter_updateable_plugin
 
 
 Include a constants.dart file:
