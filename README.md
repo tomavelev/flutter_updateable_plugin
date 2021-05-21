@@ -12,7 +12,7 @@ What a new App that wants to use it require is - adding the dependency:
 
  updatable:
  
-     url: https://github.com/tomavelev/flutter_updateable_plugin
+     git: https://github.com/tomavelev/flutter_updateable_plugin.git
 
 
 Include a constants.dart file:
