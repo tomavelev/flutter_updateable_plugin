@@ -18,6 +18,7 @@ What a new App that wants to use it require is - adding the dependency:
 Include a constants.dart file:
 
 //this should be application specific. Use it in your own app
+
 const APP_VERSION = 2; an integer number
 
 const APP_CHANNEL = "Stable"; // String specifiying the ditribution target 
@@ -39,23 +40,39 @@ import 'package:updatable/updatable.dart';
 //If your app is an external process:
 
 Updatable(
+
           appCurrentVersion: APP_VERSION,
+          
           appPlatform: APP_PLATFORM,
+          
           buildsList: BUILDS_LIST,
+          
           channel: APP_CHANNEL,
+          
           updateHost: UPDATE_HOST,
+          
           processToStart: ['java', '-jar', "myJar.jar"],
+          
           appGuid: APP_GUID,
+          
         )
 
 //Or if your app is a flutter app
 
 Updatable(
+
           appCurrentVersion: APP_VERSION,
+          
           appPlatform: APP_PLATFORM,
+          
           buildsList: BUILDS_LIST,
+          
           channel: APP_CHANNEL,
+          
           updateHost: UPDATE_HOST,
+          
           child: yourAppContent(),
+          
           appGuid: APP_GUID,
+          
         )
