@@ -19,7 +19,7 @@ Include a constants.dart file:
 
 //this should be application specific. Use it in your own app
 
-const APP_VERSION = 2; an integer number
+const APP_VERSION = 2;// an integer
 
 const APP_CHANNEL = "Stable"; // String specifiying the ditribution target 
 
@@ -40,7 +40,7 @@ import 'package:updatable/updatable.dart';
 //If your app is an external process:
 
 Updatable(
-
+          
           appCurrentVersion: APP_VERSION,
           
           appPlatform: APP_PLATFORM,
