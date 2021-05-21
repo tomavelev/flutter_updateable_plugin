@@ -21,9 +21,9 @@ Include a constants.dart file:
 
 const APP_VERSION = 2;// an integer
 
-const APP_CHANNEL = "Stable"; // String specifiying the ditribution target 
+const APP_CHANNEL = "Stable"; // String specifying the distribution target 
 
-const APP_GUID = "appGuid1123324"; // a String identifiying your app
+const APP_GUID = "appGuid1123324"; // a String identifying your app
 
 const UPDATE_HOST = "https://programtom.com/app_distribution/checkForNewVersion.php"; // the place to check for availability of new version. 
 
