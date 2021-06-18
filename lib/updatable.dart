@@ -13,15 +13,16 @@ import 'Trans.dart';
 
 class Updatable extends StatefulWidget {
   final Widget? child;
+  final bool? checkOnlyOnce;
   final int appCurrentVersion;
   final String channel;
   final String appGuid;
   final String appPlatform;
-  final String buildsList;
+  final String? buildsList;
   final String updateHost;
   final List<String>? processToStart;
 
-  Updatable({Key? key, this.child, required this.appCurrentVersion, required this.updateHost, required this.channel, required this.appPlatform, required this.buildsList, this.processToStart, required this.appGuid}) : super(key: key);
+  Updatable({Key? key, this.child, required this.appCurrentVersion, required this.updateHost, required this.channel, required this.appPlatform, this.buildsList, this.processToStart, required this.appGuid, this.checkOnlyOnce = true}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -30,6 +31,7 @@ class Updatable extends StatefulWidget {
 }
 
 class UpdatableState extends State<Updatable> {
+  static var checkDone = false;
   var isCurrentVersion = true;
   var loading = false;
   var shouldForceTheUpgrade = false;
@@ -48,7 +50,7 @@ class UpdatableState extends State<Updatable> {
     return Column( crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         loading ? Text(Trans.of(context).checkingForNewVersion) : Container(),
-        isCurrentVersion
+        isCurrentVersion || versionURL == null
             ? Container()
             : ElevatedButton(
                 onPressed: () {
@@ -61,7 +63,7 @@ class UpdatableState extends State<Updatable> {
                 ),
               ),
         Expanded(
-          child: !isCurrentVersion && shouldForceTheUpgrade
+          child: !isCurrentVersion && shouldForceTheUpgrade && versionURL != null
               ? Center(
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
                   Text(Trans.of(context).pleaseUpdateNow),
@@ -83,6 +85,9 @@ class UpdatableState extends State<Updatable> {
   }
 
   void loadVersion() {
+    if(widget.checkOnlyOnce! && checkDone) {
+      return;
+    }
     isOnline().then((isOnline) {
       setState(() {
         if (isOnline) {
@@ -106,11 +111,17 @@ class UpdatableState extends State<Updatable> {
   }
 
   Future<void> viewNewVersion() async {
-    Navigator.of(context).push(new MaterialPageRoute<Null>(
-        builder: (BuildContext context) {
-          return BuildList(shouldForceTheUpgrade: shouldForceTheUpgrade, updatable: this.widget, updateUrl: versionURL!);
-        },
-        fullscreenDialog: true));
+    if(versionURL != null) {
+      if (widget.buildsList == null) {
+        BuildState.launch1(versionURL!, context);
+      } else {
+        Navigator.of(context).push(new MaterialPageRoute<Null>(
+                builder: (BuildContext context) {
+                  return BuildList(shouldForceTheUpgrade: shouldForceTheUpgrade, updatable: this.widget, updateUrl: versionURL!);
+                },
+                fullscreenDialog: true));
+      }
+    }
   }
 
   void doLoad() {
@@ -129,6 +140,7 @@ class UpdatableState extends State<Updatable> {
             }))
         .catchError((resp) {
       setState(() {
+        checkDone =  true;
         loading = false;
         isCurrentVersion = true;
         shouldForceTheUpgrade = false;
@@ -266,7 +278,7 @@ class BuildState extends State<BuildList> {
       _isLoading = true;
     });
 
-    var uri = Uri.parse(widget.updatable.buildsList);
+    var uri = Uri.parse(widget.updatable.buildsList!);
     http
         .post(uri,
             body:
@@ -342,12 +354,12 @@ class BuildState extends State<BuildList> {
         ));
   }
 
-  void launch1(String customUrl, BuildContext context) async {
+  static void launch1(String customUrl, BuildContext context) async {
     print(customUrl);
     await canLaunch(customUrl) ? await launch(customUrl) : toast(Trans.of(context).couldNotLaunch + ' $customUrl', context);
   }
 
-  toast(String s, BuildContext context) {
+  static void toast(String s, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(s));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }

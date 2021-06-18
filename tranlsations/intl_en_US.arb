@@ -1,0 +1,9 @@
+{
+   "@@last_modified": "2021-06-17T12:35:10.000235",
+   "newVersionIsAvailable": "New Version is Available",
+   "@newVersionIsAvailable": {
+     "description": "",
+     "type": "text",
+     "placeholders": {}
+   },
+ }
