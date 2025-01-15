@@ -39,7 +39,7 @@ class BuildState extends State<BuildList> {
     setState(() {
       _isLoading = true;
     });
-    AppDistributionDao.loadBuildsList(
+    AppDistributionDao.loadBuildsPage(
       buildsList: widget.updatable.buildsList!,
       appGuid: widget.updatable.appGuid,
       appPlatform: widget.updatable.appPlatform,
@@ -49,7 +49,8 @@ class BuildState extends State<BuildList> {
     ).then((response) {
       setState(() {
         _isLoading = false;
-        _items = response;
+        //TODO introduce paging
+        _items = response.list;
       });
     }).onError((e, stack) {
       setState(() {
