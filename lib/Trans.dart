@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 
 class Trans {
   static final Trans _singleton = Trans._internal(Locale("en"));

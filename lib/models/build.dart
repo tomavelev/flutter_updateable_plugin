@@ -25,3 +25,13 @@ class Build {
           shouldForceTheUpgrade: map['shouldForceTheUpgrade'] as bool,
         );
 }
+
+class BuildPage {
+  final List<Build> list;
+  final int count;
+
+  BuildPage({
+    required this.list,
+    required this.count,
+  });
+}

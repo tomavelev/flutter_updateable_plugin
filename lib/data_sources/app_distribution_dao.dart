@@ -46,4 +46,29 @@ class AppDistributionDao {
     var list = json.decode(response.body);
     return (asList(list)).map((i) => Build.fromJson(i)).toList();
   }
+
+  static Future<BuildPage> loadBuildsPage({
+    required String buildsList,
+    required String appGuid,
+    required String appPlatform,
+    required int appVersion,
+    required String channel,
+    required String lang,
+  }) async {
+    var uri = Uri.parse(buildsList!);
+
+    var response = await http.post(uri,
+        body: jsonEncode({
+          "APP_VERSION": appVersion,
+          "APP_CHANNEL": channel,
+          "APP_GUID": appGuid,
+          "PLATFORM": appPlatform,
+          "lang": lang,
+        }));
+
+    var page = json.decode(response.body);
+    var list = (asList(page['list'])).map((i) => Build.fromJson(i)).toList();
+    var count = page['count'];
+    return BuildPage(list: list, count: count);
+  }
 }
