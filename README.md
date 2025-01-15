@@ -63,6 +63,7 @@ const  BUILDS_LIST ="${APP_DISTRIBUTION_HOST}/ApplicationBuilds/${APP_GUID}/${AP
 }
  */
 
+
 ```
 
 //and use it like this:
@@ -138,4 +139,19 @@ and should return list of objects with the fields:
           timestamp: map['timestamp'] as int?,
           appPackage: map['appPackage'].toString(),
           shouldForceTheUpgrade: map['shouldForceTheUpgrade'] as bool,                  
+```
+Note:
+
+Every Version has an URL (also the latest after clicking download update). To be working on android you may need to have APK Installer and - on sdk 30+ it requires
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+...
+<queries>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" />
+    </intent>
+</queries>
+....
 ```

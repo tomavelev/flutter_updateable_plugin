@@ -84,9 +84,8 @@ class BuildState extends State<BuildList> {
                 child: ListView.builder(
               padding: EdgeInsets.all(8.0),
               itemCount: _items!.length,
-              itemBuilder: (BuildContext context, int index) {
-                return BuildListItem(appBuild: _items![index]);
-              },
+              itemBuilder: (BuildContext context, int index) =>
+                  BuildListItem(appBuild: _items![index]),
             )),
             ElevatedButton(
               onPressed: () => launchURL(widget.updateUrl, context),
